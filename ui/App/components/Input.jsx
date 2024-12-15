@@ -2,12 +2,13 @@ import React from "react";
 
 const Input = ({
                    register,
-                   placeholder = null,
+                   placeholder = undefined,
                    type = "text",
-                   defaultValue = null,
+                   defaultValue = undefined,
                    hasAutoComplete = true,
-                   onKeyDown = () => null,
-                   min = null,
+                   onKeyDown = () => undefined,
+                   min = undefined,
+                   max = undefined,
                    value = undefined,
                    disabled = false
                }) => {
@@ -21,6 +22,7 @@ const Input = ({
             autoComplete={hasAutoComplete ? "on" : "off"}
             defaultValue={defaultValue}
             min={min}
+            max={max}
             value={value}
             disabled={disabled}
         />

@@ -7,10 +7,10 @@ function ConfirmDialog({title, content, isOpen, close, onSuccess}) {
     const [isLoading, setIsLoading] = useState(false);
 
     const confirm = () => {
-        setIsLoading(true)
+        setIsLoading(true);
         onSuccess()
             .finally(() => {
-                close()
+                close();
                 setIsLoading(false);
             })
     }

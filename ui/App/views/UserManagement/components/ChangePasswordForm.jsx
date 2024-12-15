@@ -7,13 +7,16 @@ import Input from "../../../components/Input";
 import Error from "../../../components/Error";
 
 const ChangePasswordForm = () => {
-    const {register, handleSubmit, formState: {errors}, watch} = useForm();
+    const {register, handleSubmit, reset, formState: {errors}, watch} = useForm();
+
+    const new_password = watch("new_password");
 
     const onSubmit = async (data) => {
         const res = await user.changePassword(data);
         if (res) {
             // Update successful
             window.flash("Password changed", "green")
+            reset();
         }
     }
 
@@ -37,7 +40,7 @@ const ChangePasswordForm = () => {
             </div>
             <div className="mb-4">
                 <Label htmlFor="new_password_confirmation" text="New Password Confirmation"/>
-                <Input register={register('new_password_confirmation',{required: true})}
+                <Input register={register('new_password_confirmation',{required: true, validate: value => value === new_password})}
                        type="password"
                        placeholder="New Password"
                 />

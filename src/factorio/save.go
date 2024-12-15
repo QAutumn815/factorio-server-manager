@@ -293,7 +293,7 @@ func readString(r io.Reader, game Version, forceOptimized bool) (s string, err e
 	return string(d), nil
 }
 
-func (h SaveHeader) readStats(r io.Reader) (stats map[byte][]map[uint16]uint32, err error) {
+func (h *SaveHeader) readStats(r io.Reader) (stats map[byte][]map[uint16]uint32, err error) {
 	var scratch [4]byte
 	stats = make(map[byte][]map[uint16]uint32)
 

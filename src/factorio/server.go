@@ -231,7 +231,7 @@ func (server *Server) Run() error {
 		ioutil.WriteFile(config.SettingsFile, data, 0644)
 	}
 
-	saves, err := ListSaves(config.FactorioSavesDir)
+	saves, err := ListSaves()
 	if err != nil {
 		log.Println("Failed to get saves list: ", err)
 	}
@@ -260,10 +260,15 @@ func (server *Server) Run() error {
 		args = append(args, "--server-adminlist", config.FactorioAdminFile)
 	}
 
-	if server.Savefile == "Load Latest" {
+	if strings.HasPrefix(server.Savefile, "Load Latest") {
 		args = append(args, "--start-server-load-latest")
 	} else {
 		args = append(args, "--start-server", filepath.Join(config.FactorioSavesDir, server.Savefile))
+	}
+
+	// Write chat log to a different file if requested (if not it will be mixed-in with the default logfile)
+	if config.ChatLogFile != "" {
+		args = append(args, "--console-log", config.ChatLogFile)
 	}
 
 	if config.GlibcCustom == "true" {
@@ -272,11 +277,6 @@ func (server *Server) Run() error {
 	} else {
 		log.Println("Starting server with command: ", config.FactorioBinary, args)
 		server.Cmd = exec.Command(config.FactorioBinary, args...)
-	}
-
-	// Write chat log to a different file if requested (if not it will be mixed-in with the default logfile)
-	if config.ChatLogFile != "" {
-		args = append(args, "--console-log", config.ChatLogFile)
 	}
 
 	server.StdOut, err = server.Cmd.StdoutPipe()

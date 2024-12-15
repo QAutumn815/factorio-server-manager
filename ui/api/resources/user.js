@@ -26,7 +26,7 @@ export default {
         return response.data;
     },
     changePassword: async data => {
-        const response = await client.post('/api/user/password', data);
+        const response = await client.post('/api/user/password', data).catch(err => window.flash(err.response.data, "red"));
         return response.data;
     }
 }

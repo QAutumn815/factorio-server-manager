@@ -225,11 +225,36 @@ func ModUploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = mods.UploadMod(formFile, fileHeader)
-	if err != nil {
-		resp = fmt.Sprintf("error saving file to mods: %s", err)
+	// if the file is a zip file, we handle it as mod
+	// if the file is mod-settings.dat or mod-list.json, we just replace the
+	if filepath.Ext(fileHeader.Filename) == ".zip" {
+		err = mods.UploadMod(formFile, fileHeader)
+		if err != nil {
+			resp = fmt.Sprintf("error saving file to mods: %s", err)
+			log.Println(resp)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	} else if fileHeader.Filename == "mod-settings.dat" || fileHeader.Filename == "mod-list.json" {
+		modsDir := filepath.Join(bootstrap.GetConfig().FactorioModsDir, fileHeader.Filename)
+		file, err := os.Create(modsDir)
+		if err != nil {
+			resp = fmt.Sprintf("error creating %s: %s", fileHeader.Filename, err)
+			log.Println(resp)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		_, err = io.Copy(file, formFile)
+		if err != nil {
+			resp = fmt.Sprintf("error saving %s: %s", fileHeader.Filename, err)
+			log.Println(resp)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	} else {
+		resp = fmt.Sprintf("The uploaded file wasn't a zip-file, a mod-settings. dat or a mod-info.json")
 		log.Println(resp)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -296,7 +321,7 @@ func ModDownloadHandler(w http.ResponseWriter, r *http.Request) {
 	writerHeader.Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", "all_installed_mods.zip"))
 }
 
-//LoadModsFromSaveHandler returns JSON response with the found mods
+// LoadModsFromSaveHandler returns JSON response with the found mods
 func LoadModsFromSaveHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var resp interface{}

@@ -123,7 +123,7 @@ const Mods = ({serverStatus}) => {
                     <Tab title="Upload Mod">
                         <UploadMod refetchInstalledMods={fetchInstalledMods}/>
                     </Tab>
-                    <Tab title="Load Mod from Save">
+                    <Tab title="Load Mods from Save">
                         <LoadMods refreshMods={fetchInstalledMods}/>
                     </Tab>
                 </TabControl>

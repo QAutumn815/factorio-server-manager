@@ -3,9 +3,9 @@ package bootstrap
 import (
 	"encoding/base64"
 	"encoding/json"
+	"github.com/glebarez/sqlite"
 	"github.com/syndtr/goleveldb/leveldb"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"log"
 	"math/rand"
@@ -14,9 +14,9 @@ import (
 
 type User struct {
 	gorm.Model
-	Username string `json:"username",gorm:"uniqueIndex,not null"`
-	Password string `json:"password",gorm:"not null"`
-	Role     string `json:"role",gorm:"not null"`
+	Username string `json:"username" gorm:"uniqueIndex,not null"`
+	Password string `json:"password" gorm:"not null"`
+	Role     string `json:"role" gorm:"not null"`
 	Email    string `json:"email"`
 }
 

@@ -27,11 +27,12 @@ const UploadMod = ({refetchInstalledMods}) => {
             <Label text="Save" htmlFor="mod_file"/>
             <div className="relative bg-white shadow text-black h-full w-full mb-4">
                 <input
+                    {...register('mod_file')}
                     className="absolute left-0 top-0 opacity-0 cursor-pointer w-full h-full"
                     onChange={e => setFileName(e.currentTarget.files[0].name)}
-                    ref={register('mod_file')}
                     id="mod_file"
                     type="file"
+                    accept="application/zip,.zip,.dat,.json"
                 />
                 <div className="px-2 py-2">{fileName}</div>
             </div>

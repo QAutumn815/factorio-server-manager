@@ -12,17 +12,14 @@ const Controls = ({serverStatus}) => {
 
     const factorioVersion = serverStatus.fac_version ? serverStatus.fac_version : 'Unknown';
     const [saves, setSaves] = useState([]);
+    const [isDisabled, setIsDisabled] = useState(true);
     const [isStopping, setIsStopping] = useState(false);
     const [isStarting, setIsStarting] = useState(false);
     const [isKilling, setIsKilling] = useState(false);
 
-    const { handleSubmit, register, formState: {errors} } = useForm();
+    const { handleSubmit, reset, register, formState: {errors} } = useForm();
 
     const startServer = async (data) => {
-        if(saves.length === 1 && saves[0].name === "Load Latest") {
-            window.flash("Save must be created before starting server", "red");
-            return;
-        }
         setIsStarting(true);
         await server.start(data.ip, parseInt(data.port), data.save);
     }
@@ -38,8 +35,14 @@ const Controls = ({serverStatus}) => {
     }
 
     useEffect(() => {
-        savesResource.list()
-            .then(res => setSaves(res));
+        savesResource.list(true)
+            .then(res => {
+                setSaves(res);
+                if (res.length > 0) {
+                    setIsDisabled(undefined);
+                }
+                reset();
+            });
     }, [])
 
     return (
@@ -80,7 +83,8 @@ const Controls = ({serverStatus}) => {
                                 <div className="font-bold">IP</div>
                                 <Input
                                     defaultValue={"0.0.0.0"}
-                                    register={register('ip',{required: true, pattern: '^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'})}
+                                    disabled={isDisabled}
+                                    register={register('ip',{required: true, pattern: /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/})}
                                 />
                                 <Error error={errors.ip} message="IP is required and must be valid."/>
                             </div>
@@ -89,10 +93,12 @@ const Controls = ({serverStatus}) => {
                                 <Input
                                     type="number"
                                     min={1}
+                                    max={65535}
                                     defaultValue={"34197"}
-                                    register={register('port',{required: true})}
+                                    disabled={isDisabled}
+                                    register={register('port',{required: true, min: 1, max: 65535})}
                                 />
-                                <Error error={errors.port} message="Port is required"/>
+                                <Error error={errors.port} message="Port is required within range 1-65535"/>
                             </div>
                             <div className="lg:w-1/5 mb-2 mr-0 lg:mr-4">
                                 <div className="font-bold">Factorio Version</div>
@@ -103,12 +109,14 @@ const Controls = ({serverStatus}) => {
                                 <div className="relative">
                                     <Select
                                         register={register('save',{required: true})}
-                                        defaultValue="Load Latest"
+                                        defaultValue={saves.find((save) => save.name.startsWith('Load Latest'))?.name}
+                                        disabled={isDisabled}
                                         options={saves.map(save => new Object({
                                             value: save.name,
                                             name: save.name
                                         }))}
                                     />
+                                    <Error error={errors.save} message="Save is required and must be valid."/>
                                 </div>
                             </div>
                         </>
@@ -122,7 +130,7 @@ const Controls = ({serverStatus}) => {
                             <Button onClick={stopServer} isLoading={isStopping} isDisabled={isKilling} size="sm" className="w-full md:w-auto mb-2 md:mb-0 md:mr-2" type="default">Save & Stop Server</Button>
                             <Button onClick={killServer} isLoading={isKilling} isDisabled={isStopping} size="sm" type="danger" className="w-full md:w-auto">Kill Server</Button>
                         </>
-                        : <Button isSubmit={true} isLoading={isStarting} size="sm" type="success" className="w-full md:w-auto">Start Server</Button>
+                        : <Button isSubmit={true} isDisabled={isDisabled} isLoading={isStarting} size="sm" type="success" className="w-full md:w-auto">Start Server</Button>
                     }
                 </div>
             }

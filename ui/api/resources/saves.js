@@ -1,8 +1,12 @@
 import client from "../client";
 
 export default {
-    list: async () => {
-        const response = await client.get('/api/saves/list');
+    list: async (latest) => {
+        const response = await client.get('/api/saves/list', {
+            params: {
+                latest
+            }
+        });
         return response.data;
     },
     delete: async (save) => {

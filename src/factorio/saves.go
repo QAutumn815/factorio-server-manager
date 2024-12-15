@@ -18,14 +18,15 @@ type Save struct {
 	Size    int64     `json:"size"`
 }
 
-func (s Save) String() string {
+func (s *Save) String() string {
 	return s.Name
 }
 
 // Lists save files in factorio/saves
-func ListSaves(saveDir string) (saves []Save, err error) {
+func ListSaves() (saves []Save, err error) {
+	config := bootstrap.GetConfig()
 	saves = []Save{}
-	err = filepath.Walk(saveDir, func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(config.FactorioSavesDir, func(path string, info os.FileInfo, err error) error {
 		if info == nil || (info.IsDir() && info.Name() == "saves") {
 			return nil
 		}
@@ -40,8 +41,7 @@ func ListSaves(saveDir string) (saves []Save, err error) {
 }
 
 func FindSave(name string) (*Save, error) {
-	config := bootstrap.GetConfig()
-	saves, err := ListSaves(config.FactorioSavesDir)
+	saves, err := ListSaves()
 	if err != nil {
 		return nil, fmt.Errorf("error listing saves: %v", err)
 	}
@@ -83,4 +83,25 @@ func CreateSave(filePath string) (string, error) {
 	result := string(cmdOutput)
 
 	return result, nil
+}
+
+func GetLatestSave() (save Save, err error) {
+	config := bootstrap.GetConfig()
+
+	err = filepath.Walk(config.FactorioSavesDir, func(path string, info os.FileInfo, err error) error {
+		if info == nil || (info.IsDir() && info.Name() == "saves") {
+			return nil
+		}
+
+		if save.LastMod.Before(info.ModTime()) {
+			save = Save{
+				Name:    info.Name(),
+				LastMod: info.ModTime(),
+				Size:    info.Size(),
+			}
+		}
+		return nil
+	})
+
+	return
 }

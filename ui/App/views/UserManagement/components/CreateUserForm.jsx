@@ -7,8 +7,18 @@ import Input from "../../../components/Input";
 import Error from "../../../components/Error";
 
 const CreateUserForm = ({updateUserList}) => {
+    const roleValue = "admin";
 
-    const {register, handleSubmit, formState: {errors}, watch} = useForm();
+    const {
+        register,
+        handleSubmit,
+        formState: {errors},
+        watch
+    } = useForm({
+        values: {
+            role: roleValue,
+        }
+    });
     const password = watch('password');
 
     const onSubmit = async (data) => {
@@ -22,26 +32,24 @@ const CreateUserForm = ({updateUserList}) => {
         <form onSubmit={handleSubmit(onSubmit)}>
             <div className="mb-4">
                 <Label htmlFor="username" text="Username"/>
-                <Input register={register('username',{required: true})}
+                <Input register={register('username', {required: true})}
                        type="text"
                        placeholder="Username"
                 />
                 <Error error={errors.username} message="Username is required"/>
             </div>
             <div className="mb-4">
-                <Label htmlFor="role" text="Role" />
-                <input className="shadow appearance-none border w-full py-2 px-3 text-black"
-                       {...register('role',{required: true})}
-                       value="admin"
+                <Label htmlFor="role" text="Role"/>
+                <Input register={register('role', {required: true})}
+                       value={roleValue}
                        disabled={true}
-                       type="text"
                        placeholder="Role"
                 />
                 <Error error={errors.role} message="Role is required"/>
             </div>
             <div className="mb-4">
                 <Label htmlFor="email" text="Email"/>
-                <Input register={register('email',{required: true})}
+                <Input register={register('email', {required: true})}
                        type="email"
                        placeholder="Email"
                 />
@@ -49,7 +57,7 @@ const CreateUserForm = ({updateUserList}) => {
             </div>
             <div className="mb-4">
                 <Label htmlFor="password" text="Password"/>
-                <Input register={register('password',{required: true})}
+                <Input register={register('password', {required: true})}
                        type="password"
                        placeholder="Password"
                 />
@@ -57,12 +65,16 @@ const CreateUserForm = ({updateUserList}) => {
             </div>
             <div className="mb-4">
                 <Label htmlFor="password_confirmation" text="Password Confirmation"/>
-                <Input register={register('password_confirmation',{required: true, validate: conformation => conformation === password})}
+                <Input register={register('password_confirmation', {
+                            required: true,
+                            validate: conformation => conformation === password
+                        })}
 
                        type="password"
                        placeholder="Password Confirmation"
                 />
-                <Error error={errors.password_confirmation} message="Password Confirmation is required and must match the Password"/>
+                <Error error={errors.password_confirmation}
+                       message="Password Confirmation is required and must match the Password"/>
             </div>
             <Button isSubmit={true} type="success">Save</Button>
         </form>

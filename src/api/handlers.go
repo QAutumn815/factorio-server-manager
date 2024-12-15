@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"sync"
 	"time"
 
@@ -84,14 +85,28 @@ func SaveSession(w http.ResponseWriter, r *http.Request, session *sessions.Sessi
 // Lists all save files in the factorio/saves directory
 func ListSaves(w http.ResponseWriter, r *http.Request) {
 	var resp interface{}
-	config := bootstrap.GetConfig()
 	defer func() {
 		WriteResponse(w, resp)
 	}()
 
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
 
-	savesList, err := factorio.ListSaves(config.FactorioSavesDir)
+	latestParam := r.URL.Query().Get("latest")
+
+	var withLatest bool
+
+	if latestParam != "" {
+		var err error
+		withLatest, err = strconv.ParseBool(latestParam)
+		if err != nil {
+			resp = fmt.Sprintf("Error parsing latestParam: %s", err)
+			log.Println(resp)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
+
+	savesList, err := factorio.ListSaves()
 	if err != nil {
 		resp = fmt.Sprintf("Error listing save files: %s", err)
 		log.Println(resp)
@@ -99,8 +114,19 @@ func ListSaves(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	loadLatest := factorio.Save{Name: "Load Latest"}
-	savesList = append(savesList, loadLatest)
+	// get actual latest and add name
+	// but only if requested
+	if withLatest && len(savesList) != 0 {
+		latestSave, err := factorio.GetLatestSave()
+		if err != nil {
+			resp = fmt.Sprintf("Error getting latest save: %s", err)
+			log.Println(resp)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		latestSave.Name = fmt.Sprintf("Load Latest (%s)", latestSave.Name)
+		savesList = append(savesList, latestSave)
+	}
 
 	resp = savesList
 }
